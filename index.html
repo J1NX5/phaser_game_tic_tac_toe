@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="phaser.min.js"></script>
+</head>
+<body>
+    <script>
+        var config = {
+            type: Phaser.AUTO,
+            width: 800,
+            height: 600,
+            scene: {
+                preload: preload,
+                create: create,
+                update: update
+            }
+        };
+
+        var board = [
+            [null, null, null],
+            [null, null, null],
+            [null, null, null]
+        ]
+
+        var currentPlayer = 'X'
+
+        var game = new Phaser.Game(config);
+
+        function preload() {
+        }
+
+        function create() {
+            var grid = this.add.grid(config.width / 2, config.height / 2, 375, 375, 125, 125, 0xffffff)
+                .setAltFillStyle(0xeeeeee)
+                .setOutlineStyle();
+                
+
+            var cellSize = 125;
+
+            grid.setInteractive();
+
+            grid.on('pointerdown', function (pointer) {
+                var i = Math.floor((pointer.x - 200) / cellSize);
+                var j = Math.floor((pointer.y - 112.5)/ cellSize);
+
+                var rect = this.add.rectangle((i * cellSize)+ 212.5 + (cellSize / 2), (j * cellSize)+ 112.5 + (cellSize / 2), cellSize, cellSize, 0xff0000);
+                rect.setAlpha(0.5);
+
+                this.time.delayedCall(300, function () {
+                    rect.destroy();
+                }, [], this);
+
+                board[j][i] = currentPlayer
+
+                if(currentPlayer == "X"){
+                    currentPlayer = "O"
+                } else {
+                    currentPlayer = "X"
+                }
+
+                console.log(board)
+
+                var text = this.add.text(
+                    i * cellSize + 212.5 + cellSize / 2,
+                    j * cellSize + 112.5 +  cellSize / 2,
+                    currentPlayer,
+                    {
+                    font: '32px Arial',
+                    fill: '#000000'
+                    }
+                );
+                text.setOrigin(0.5);
+                console.log('Clicked on cell:', i, j);
+                }, this);
+        }
+
+        function update(){
+            checkWin()
+        }
+
+        function checkWin(){
+            if (board[0][0] !== null && board[0][1] !== null && board[0][2] !== null){
+                if(board[0][0] == board[0][1] && board[0][0] == board[0][2]){
+                    console.log("Gewonnen")
+                    this.game.destroy(true)
+                }
+            }
+        }
+    </script>
+</body>
+</html>
