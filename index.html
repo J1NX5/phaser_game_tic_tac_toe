@@ -40,29 +40,30 @@
             grid.setInteractive();
 
             grid.on('pointerdown', function (pointer) {
-                var i = Math.floor((pointer.x - 200) / cellSize);
-                var j = Math.floor((pointer.y - 112.5)/ cellSize);
+                if(currentPlayer == "X"){
+                    currentPlayer = "O"
+                } else {
+                    currentPlayer = "X"
+                }
+                var col = Math.floor((pointer.x - 200) / cellSize);
+                var row = Math.floor((pointer.y - 112.5)/ cellSize);
 
-                var rect = this.add.rectangle((i * cellSize)+ 212.5 + (cellSize / 2), (j * cellSize)+ 112.5 + (cellSize / 2), cellSize, cellSize, 0xff0000);
+                var rect = this.add.rectangle((col * cellSize)+ 212.5 + (cellSize / 2), (row * cellSize)+ 112.5 + (cellSize / 2), cellSize, cellSize, 0xff0000);
                 rect.setAlpha(0.5);
 
                 this.time.delayedCall(300, function () {
                     rect.destroy();
                 }, [], this);
 
-                board[j][i] = currentPlayer
-
-                if(currentPlayer == "X"){
-                    currentPlayer = "O"
-                } else {
-                    currentPlayer = "X"
-                }
-
+                board[row][col] = currentPlayer
+                console.log({col, row, currentPlayer, board})
+                checkWin(col, row, currentPlayer)  
+                
                 console.log(board)
 
                 var text = this.add.text(
-                    i * cellSize + 212.5 + cellSize / 2,
-                    j * cellSize + 112.5 +  cellSize / 2,
+                    col * cellSize + 212.5 + cellSize / 2,
+                    row * cellSize + 112.5 +  cellSize / 2,
                     currentPlayer,
                     {
                     font: '32px Arial',
@@ -70,21 +71,88 @@
                     }
                 );
                 text.setOrigin(0.5);
-                console.log('Clicked on cell:', i, j);
+                console.log('Clicked on cell:', col, row);
                 }, this);
         }
 
         function update(){
-            checkWin()
         }
 
-        function checkWin(){
-            if (board[0][0] !== null && board[0][1] !== null && board[0][2] !== null){
-                if(board[0][0] == board[0][1] && board[0][0] == board[0][2]){
+        function checkWin(lastRow, lastCol, currentPlayer){
+
+            //check row
+            for(let i = 0; i < board.length; i++){
+                if(board[i][lastRow] !== currentPlayer){
+                    break;
+                }
+                if(i == board.length - 1){
                     console.log("Gewonnen")
                     this.game.destroy(true)
                 }
             }
+
+            //check column
+            for(let i = 0; i < board.length; i++){
+                if(board[lastCol][i] !== currentPlayer){
+                    break;
+                }
+                if(i == board.length - 1){
+                    console.log("Gewonnen")
+                    this.game.destroy(true)
+                }
+            }
+
+            //check diagonal
+            if(lastCol == lastRow){
+                for(let i = 0; i < board.length; i++){
+                    if(board[i][i] !== currentPlayer){
+                        break;
+                    }
+                    if(i == board.length - 1){
+                        console.log("Gewonnen")
+                        this.game.destroy(true)
+                    }
+                }
+            }
+
+            //check anti diagonal
+            if(lastCol + lastRow == board.length - 1){
+                for(let i = 0; i < board.length; i++){
+                    if(board[i][(board.length - 1) - i] !== currentPlayer){
+                        break;
+                    }
+                    if(i == board.length - 1){
+                        console.log("Gewonnen")
+                        this.game.destroy(true)
+                    }
+                }
+            }
+            
+
+            /*if(board[0][0] == board[0][1] == board[0][2]){
+                console.log("Gewonnen 1")
+                this.game.destroy(true)
+            }
+
+            if(board[1][0] == board[1][1] && board[0][0] == board[1][2]){
+                console.log("Gewonnen")
+                this.game.destroy(true)
+            }
+
+            if(board[2][0] == board[2][1] && board[2][0] == board[2][2]){
+                console.log("Gewonnen")
+                this.game.destroy(true)
+            }
+
+            if(board[0][0] == board[1][1] && board[0][0] == board[2][2]){
+                console.log("Gewonnen")
+                this.game.destroy(true)
+            }
+
+            if(board[2][0] == board[1][1] && board[2][0] == board[0][2]){
+                console.log("Gewonnen")
+                this.game.destroy(true)
+            }*/
         }
     </script>
 </body>
