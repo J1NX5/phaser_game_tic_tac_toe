@@ -23,16 +23,36 @@
         ]
 
         var currentPlayer = 'X'
+        var winningVector
+        var tween
 
         var game = new Phaser.Game(config);
 
         function preload() {
+            this.load.image('winningVector', 'assets/img/winning.png')
         }
 
         function create() {
+            winningVector = this.add.image(100,100, 'winningVector')
+            winningVector.setScale(0.1);
+            winningVector.setDepth(1);
+            // winningVector.setAlpha(0)
+
             var grid = this.add.grid(config.width / 2, config.height / 2, 375, 375, 125, 125, 0xffffff)
                 .setAltFillStyle(0xeeeeee)
                 .setOutlineStyle();
+
+            tween = this.tweens.add({
+                targets: winningVector,
+                x: 600, 
+                y: 300, 
+                duration: 2000, 
+                ease: 'Linear', 
+                paused: true,
+                repeat: -1,
+                yoyo: true
+            });
+
                 
 
             var cellSize = 125;
@@ -87,7 +107,7 @@
                 }
                 if(i == board.length - 1){
                     console.log("Gewonnen")
-                    this.game.destroy(true)
+                    tween.play()
                 }
             }
 
@@ -98,7 +118,7 @@
                 }
                 if(i == board.length - 1){
                     console.log("Gewonnen")
-                    this.game.destroy(true)
+                    tween.play()
                 }
             }
 
@@ -110,7 +130,7 @@
                     }
                     if(i == board.length - 1){
                         console.log("Gewonnen")
-                        this.game.destroy(true)
+                        tween.play()
                     }
                 }
             }
@@ -123,36 +143,12 @@
                     }
                     if(i == board.length - 1){
                         console.log("Gewonnen")
-                        this.game.destroy(true)
+                        tween.play()
                     }
                 }
             }
             
 
-            /*if(board[0][0] == board[0][1] == board[0][2]){
-                console.log("Gewonnen 1")
-                this.game.destroy(true)
-            }
-
-            if(board[1][0] == board[1][1] && board[0][0] == board[1][2]){
-                console.log("Gewonnen")
-                this.game.destroy(true)
-            }
-
-            if(board[2][0] == board[2][1] && board[2][0] == board[2][2]){
-                console.log("Gewonnen")
-                this.game.destroy(true)
-            }
-
-            if(board[0][0] == board[1][1] && board[0][0] == board[2][2]){
-                console.log("Gewonnen")
-                this.game.destroy(true)
-            }
-
-            if(board[2][0] == board[1][1] && board[2][0] == board[0][2]){
-                console.log("Gewonnen")
-                this.game.destroy(true)
-            }*/
         }
     </script>
 </body>
