@@ -23,6 +23,7 @@
         ]
 
         var currentPlayer = 'X'
+        var tmp_error = false
         var winningVector
         var tween
 
@@ -60,11 +61,14 @@
             grid.setInteractive();
 
             grid.on('pointerdown', function (pointer) {
-                if(currentPlayer == "X"){
-                    currentPlayer = "O"
-                } else {
-                    currentPlayer = "X"
+                if(tmp_error == false){
+                    if(currentPlayer == "X"){
+                        currentPlayer = "O"
+                    } else {
+                        currentPlayer = "X"
+                    }
                 }
+        
                 var col = Math.floor((pointer.x - 200) / cellSize);
                 var row = Math.floor((pointer.y - 112.5)/ cellSize);
 
@@ -75,13 +79,13 @@
                     rect.destroy();
                 }, [], this);
 
-                board[row][col] = currentPlayer
-                console.log({col, row, currentPlayer, board})
-                checkWin(col, row, currentPlayer)  
-                
-                console.log(board)
-
-                var text = this.add.text(
+                if(board[row][col]){
+                    alert("Das Feld ist schon besetzt")
+                    tmp_error = true
+                } else {
+                    board[row][col] = currentPlayer
+                    tmp_error = false
+                    var text = this.add.text(
                     col * cellSize + 212.5 + cellSize / 2,
                     row * cellSize + 112.5 +  cellSize / 2,
                     currentPlayer,
@@ -89,8 +93,16 @@
                     font: '32px Arial',
                     fill: '#000000'
                     }
-                );
-                text.setOrigin(0.5);
+                    );
+                    text.setOrigin(0.5);
+                }
+                
+                console.log({col, row, currentPlayer, board})
+                checkWin(col, row, currentPlayer)  
+                
+                console.log(board)
+
+                
                 console.log('Clicked on cell:', col, row);
                 }, this);
         }
