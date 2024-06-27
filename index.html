@@ -15,17 +15,7 @@
                 update: update
             }
         };
-
-        var board = [
-            [null, null, null],
-            [null, null, null],
-            [null, null, null]
-        ]
-
-        var currentPlayer = 'X'
-        var tmp_error = false
-        var winningVector
-        var tween
+        
 
         var game = new Phaser.Game(config);
 
@@ -34,6 +24,17 @@
         }
 
         function create() {
+            this.board = [
+                [null, null, null],
+                [null, null, null],
+                [null, null, null]
+            ]
+            this.currentPlayer = 'X'
+            this.computerPlayer = 'O'
+
+            this.tmp_error = false
+
+            var winningVector
             winningVector = this.add.image(100,100, 'winningVector')
             winningVector.setScale(0.1);
             winningVector.setDepth(1);
@@ -43,7 +44,7 @@
                 .setAltFillStyle(0xeeeeee)
                 .setOutlineStyle();
 
-            tween = this.tweens.add({
+            this.tween = this.tweens.add({
                 targets: winningVector,
                 x: 600, 
                 y: 300, 
@@ -51,24 +52,28 @@
                 ease: 'Linear', 
                 paused: true,
                 repeat: -1,
-                yoyo: true
+                yoyo: true,
+                onStart: () => {
+                    gameActive = false; // Spiel nach Abschluss der Animation deaktivieren
+                }
             });
 
                 
 
             var cellSize = 125;
+            this.gameActive = true; 
 
             grid.setInteractive();
 
             grid.on('pointerdown', function (pointer) {
-                if(tmp_error == false){
+                /*if(tmp_error == false){
                     if(currentPlayer == "X"){
                         currentPlayer = "O"
                     } else {
                         currentPlayer = "X"
                     }
-                }
-        
+                }*/
+                if (!this.gameActive) return;
                 var col = Math.floor((pointer.x - 200) / cellSize);
                 var row = Math.floor((pointer.y - 112.5)/ cellSize);
 
@@ -79,12 +84,15 @@
                     rect.destroy();
                 }, [], this);
 
-                if(board[row][col]){
+                if(this.board[row][col]){
                     alert("Das Feld ist schon besetzt")
-                    tmp_error = true
-                } else {
-                    board[row][col] = currentPlayer
-                    tmp_error = false
+                    this.tmp_error = true
+                    return
+                }
+                /*} else {
+                    this.board[row][col] = currentPlayer
+                    this.tmp_error = false
+                    console.log(`Col: ${col} und Row: ${row}`)
                     var text = this.add.text(
                     col * cellSize + 212.5 + cellSize / 2,
                     row * cellSize + 112.5 +  cellSize / 2,
@@ -95,72 +103,144 @@
                     }
                     );
                     text.setOrigin(0.5);
-                }
+                }*/
+                this.board[row][col] = this.currentPlayer
+                drawBoard.call(this)
                 
-                console.log({col, row, currentPlayer, board})
-                checkWin(col, row, currentPlayer)  
-                
-                console.log(board)
-
-                
-                console.log('Clicked on cell:', col, row);
+                //console.log({col, row, currentPlayer: this.currentPlayer, board: this.board})
+                checkWin.call(this)
+                computerMove.call(this)
+                checkWin.call(this)
                 }, this);
         }
 
         function update(){
         }
 
-        function checkWin(lastRow, lastCol, currentPlayer){
+        function blockGame() {
+            this.gameActive = false; // Spiel blockieren
+        }
 
+        function checkWin(){
+            var board = this.board;
             //check row
-            for(let i = 0; i < board.length; i++){
-                if(board[i][lastRow] !== currentPlayer){
-                    break;
-                }
-                if(i == board.length - 1){
+            for(let r = 0; r < board.length; r++){
+                let tmp = ""
+                for(let c = 0; c <board[r].length; c++){
+                    tmp += board[r][c] 
+                } 
+                if(checkwinstring(tmp)){
                     console.log("Gewonnen")
-                    tween.play()
+                    this.tween.play()
+                    return blockGame()
+                } else {
+                    tmp = ""
                 }
+                
             }
 
             //check column
-            for(let i = 0; i < board.length; i++){
-                if(board[lastCol][i] !== currentPlayer){
-                    break;
-                }
-                if(i == board.length - 1){
+            for(let r = 0; r < board.length; r++){
+                let tmp = ""
+                for(let c = 0; c <board[r].length; c++){
+                    tmp += board[c][r] 
+                } 
+                if(checkwinstring(tmp)){
                     console.log("Gewonnen")
-                    tween.play()
-                }
-            }
-
-            //check diagonal
-            if(lastCol == lastRow){
-                for(let i = 0; i < board.length; i++){
-                    if(board[i][i] !== currentPlayer){
-                        break;
-                    }
-                    if(i == board.length - 1){
-                        console.log("Gewonnen")
-                        tween.play()
-                    }
-                }
-            }
-
-            //check anti diagonal
-            if(lastCol + lastRow == board.length - 1){
-                for(let i = 0; i < board.length; i++){
-                    if(board[i][(board.length - 1) - i] !== currentPlayer){
-                        break;
-                    }
-                    if(i == board.length - 1){
-                        console.log("Gewonnen")
-                        tween.play()
-                    }
+                    this.tween.play()
+                    blockGame()
+                    return
+                } else {
+                    tmp = ""
                 }
             }
             
 
+            //check diagonal
+            //console.log(board[board.length - 1][0])
+            if(board[board.length - 1][0] == board[0][board[0].length - 1]){
+                let tmp1 = board[board.length - 1][0] + board[1][1] + board[0][board[0].length - 1]
+                //console.log(tmp1)
+                if(checkwinstring(tmp1)){
+                    console.log("Gewonnen")
+                    this.tween.play()
+                    blockGame()
+                    return
+                } else {
+                    tmp1 = ""
+                }
+            }
+
+            //check anti diagonal
+            if (board[0][0] == board[board.length - 1][board[board.length - 1].length - 1]) {
+                let tmp2 = board[0][0] + board[1][1] + board[board.length - 1][board[board.length - 1].length - 1];
+                console.log(tmp2);
+                if (checkwinstring(tmp2)) {
+                    console.log("Gewonnen");
+                    this.tween.play();
+                    blockGame()
+                    return
+                } else {
+                    tmp2 = "";
+                }
+            }
+        }
+
+        function checkwinstring(str){
+            var firstChar = str[0];
+            if (firstChar === null || firstChar === undefined) {
+                return false; // Wenn das erste Zeichen null oder undefined ist, ist der Test fehlgeschlagen
+            }
+            for (var i = 1; i < str.length; i++) {
+                if (str[i] !== firstChar) {
+                    return false; // Sobald ein Zeichen nicht dem ersten Zeichen entspricht, ist der Test fehlgeschlagen
+                }
+            }
+            return true; // Alle Zeichen sind gleich
+        }
+
+        function computerMove(){
+            if (startmove.call(this)) {
+                this.gameActive = false
+                setTimeout(() => {
+                        this.board[1][1] = this.computerPlayer;
+                        drawBoard.call(this);
+                        this.gameActive = true
+                    }, 1000);
+            } else {
+                console.log("Computer kann keinen Zug machen.");
+            }
+
+        }
+
+        function startmove(){
+            //console.log(this.computerPlayer)
+            if(this.board[1][1] === null){
+                return true
+            } else {
+                return false
+            }
+            console.log("startmove wird ausgeführt")
+        }
+
+        function drawBoard(){
+            //if (this.gameActive) return;
+            for (let i = 0; i < this.board.length; i++) {
+                for (let j = 0; j < this.board[i].length; j++) {
+                    tmp_error = false
+                    var text = this.add.text(
+                    (j * 125) + 212.5 + (125 / 2),
+                    (i * 125) + 112.5 +  (125 / 2),
+                    this.board[i][j],
+                    {
+                    font: '32px Arial',
+                    fill: '#000000'
+                    }
+                    );
+                    text.setOrigin(0.5);
+                }
+            }
+                    
         }
     </script>
 </body>
